@@ -1,0 +1,218 @@
+diff --git a/back-end/src/main/java/com/endava/ensight/controller/ApplicationController.java b/back-end/src/main/java/com/endava/ensight/controller/ApplicationController.java
+index 061fb07..b230624 100644
+--- a/back-end/src/main/java/com/endava/ensight/controller/ApplicationController.java
++++ b/back-end/src/main/java/com/endava/ensight/controller/ApplicationController.java
+@@ -19,10 +19,10 @@ import java.util.List;
+ public class ApplicationController {
+ 
+     @Autowired
+-    private QuestionService questionService;
++    QuestionService questionService;
+ 
+     @Autowired
+-    private TestService testService;
++    TestService testService;
+ 
+     @PostMapping(value = "/questions", consumes = MediaType.APPLICATION_JSON_VALUE)
+     public ResponseEntity<String> createQuestion(@RequestBody QuestionDto questionDto) {
+@@ -57,9 +57,9 @@ public class ApplicationController {
+     }
+ 
+     @PostMapping(value = "/tests", consumes = MediaType.APPLICATION_JSON_VALUE)
+-    public ResponseEntity<Void> generateTests(@RequestBody TestFormatDto formatDto) {
++    public ResponseEntity<Void> generateTests(@RequestBody TestFormatDto formatDto){
+         Boolean success = testService.createTests(formatDto);
+-        if (success)
++        if(success)
+             return new ResponseEntity<>(HttpStatus.CREATED);
+         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+     }
+diff --git a/back-end/src/main/java/com/endava/ensight/dto/TestFormat.java b/back-end/src/main/java/com/endava/ensight/dto/TestFormat.java
+index 3c1f7d1..9fd616d 100644
+--- a/back-end/src/main/java/com/endava/ensight/dto/TestFormat.java
++++ b/back-end/src/main/java/com/endava/ensight/dto/TestFormat.java
+@@ -6,12 +6,12 @@ import java.util.HashMap;
+ import java.util.Objects;
+ 
+ public class TestFormat {
+-    private HashMap<String, Integer> difficultyMap;
++    private HashMap<String,Integer> difficultyMap;
+     private Integer questions;
+     private Integer tests;
+     private Discipline discipline;
+ 
+-    public TestFormat() {
++    public TestFormat(){
+     }
+ 
+     public HashMap<String, Integer> getDifficultyMap() {
+@@ -45,7 +45,6 @@ public class TestFormat {
+     public void setDiscipline(Discipline discipline) {
+         this.discipline = discipline;
+     }
+-
+     @Override
+     public boolean equals(Object o) {
+         if (this == o) return true;
+diff --git a/back-end/src/main/java/com/endava/ensight/dto/TestFormatDto.java b/back-end/src/main/java/com/endava/ensight/dto/TestFormatDto.java
+index f391d64..f1e072d 100644
+--- a/back-end/src/main/java/com/endava/ensight/dto/TestFormatDto.java
++++ b/back-end/src/main/java/com/endava/ensight/dto/TestFormatDto.java
+@@ -13,8 +13,7 @@ public class TestFormatDto {
+     private Integer hardPercentage;
+     private Integer nbOfTests;
+ 
+-    public TestFormatDto() {
+-    }
++    public TestFormatDto(){}
+ 
+     public Discipline getDiscipline() {
+         return discipline;
+diff --git a/back-end/src/main/java/com/endava/ensight/repository/TestRepository.java b/back-end/src/main/java/com/endava/ensight/repository/TestRepository.java
+index 68a88cb..914c6eb 100644
+--- a/back-end/src/main/java/com/endava/ensight/repository/TestRepository.java
++++ b/back-end/src/main/java/com/endava/ensight/repository/TestRepository.java
+@@ -40,8 +40,8 @@ public class TestRepository implements CRUDRepository<Integer, Test> {
+     @Override
+     @Transactional
+     public boolean updateById(Integer id, Test toUpdate) {
+-        Test element = entityManager.find(Test.class, id);
+-        if (element == null)
++        Test element = entityManager.find(Test.class,id);
++        if(element == null)
+             return false;
+         element.setCreatedAt(toUpdate.getCreatedAt());
+         element.setUpdatedAt(toUpdate.getUpdatedAt());
+diff --git a/back-end/src/main/java/com/endava/ensight/service/TestService.java b/back-end/src/main/java/com/endava/ensight/service/TestService.java
+index a9cef3f..f1dc0e2 100644
+--- a/back-end/src/main/java/com/endava/ensight/service/TestService.java
++++ b/back-end/src/main/java/com/endava/ensight/service/TestService.java
+@@ -56,7 +56,7 @@ public class TestService {
+ 
+         Random random = new Random();
+         for (String difficulty : format.getDifficultyMap().keySet()) {
+-            if (format.getDifficultyMap().get(difficulty) == 0)
++            if(format.getDifficultyMap().get(difficulty) == 0)
+                 continue;
+             List<Question> difficulties = questions.stream().filter(q -> q.getDifficulty().equals(difficulty))
+                     .collect(Collectors.toList());
+@@ -73,7 +73,7 @@ public class TestService {
+         return randomQuestions;
+     }
+ 
+-    public TestFormat convertTestFormatDto(TestFormatDto formatDto) {
++    public TestFormat convertTestFormatDto(TestFormatDto formatDto){
+         TestFormat format = new TestFormat();
+         HashMap<String, Integer> map = new HashMap<>();
+         map.put("easy", formatDto.getEasyPercentage());
+@@ -87,6 +87,6 @@ public class TestService {
+             if (discipline.getName().equals(formatDto.getDiscipline().getName()))
+                 format.setDiscipline(discipline);
+         }
+-        return format;
++        return  format;
+     }
+ }
+diff --git a/back-end/src/test/java/com/endava/ensight/repository/TestRepositoryTest.java b/back-end/src/test/java/com/endava/ensight/repository/TestRepositoryTest.java
+index e70aa11..7508000 100644
+--- a/back-end/src/test/java/com/endava/ensight/repository/TestRepositoryTest.java
++++ b/back-end/src/test/java/com/endava/ensight/repository/TestRepositoryTest.java
+@@ -15,6 +15,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
+ import org.springframework.transaction.annotation.Transactional;
+ 
+ import javax.persistence.EntityManager;
++
+ import java.sql.SQLException;
+ import java.util.ArrayList;
+ 
+@@ -40,7 +41,7 @@ public class TestRepositoryTest {
+ 
+     @Test
+     @Transactional
+-    public void shouldReturnIdWhenTestIsAddedToTable() {
++    public void shouldReturnIdWhenTestIsAddedToTable(){
+         Discipline discipline = new Discipline("AM");
+         entityManager.persist(discipline);
+         com.endava.ensight.model.Test test = new com.endava.ensight.model.Test();
+@@ -53,7 +54,7 @@ public class TestRepositoryTest {
+ 
+     @Test
+     @Transactional
+-    public void updateOnGoodIdWithValidObjectShouldReturnTrue() {
++    public void updateOnGoodIdWithValidObjectShouldReturnTrue(){
+         Discipline discipline = new Discipline("AM");
+         entityManager.persist(discipline);
+         com.endava.ensight.model.Test test = new com.endava.ensight.model.Test();
+@@ -63,14 +64,14 @@ public class TestRepositoryTest {
+         test.setQuestions(new ArrayList<>());
+         Integer id = testRepository.add(test);
+         test.setTitle("title");
+-        testRepository.updateById(id, test);
+-        Assertions.assertThat(testRepository.updateById(id, test))
++        testRepository.updateById(id,test);
++        Assertions.assertThat(testRepository.updateById(id,test))
+                 .as("Update on valid id and element must return true: ").isEqualTo(true);
+     }
+ 
+     @Test
+     @Transactional
+-    public void updateOnBadIdWithValidObjectShouldReturnFalse() {
++    public void updateOnBadIdWithValidObjectShouldReturnFalse(){
+         Discipline discipline = new Discipline("AM");
+         entityManager.persist(discipline);
+         com.endava.ensight.model.Test test = new com.endava.ensight.model.Test();
+@@ -80,8 +81,8 @@ public class TestRepositoryTest {
+         test.setQuestions(new ArrayList<>());
+         testRepository.add(test);
+         test.setTitle("title");
+-        testRepository.updateById(-1, test);
+-        Assertions.assertThat(testRepository.updateById(-1, test))
++        testRepository.updateById(-1,test);
++        Assertions.assertThat(testRepository.updateById(-1,test))
+                 .as("Update on valid id and element must return true: ").isEqualTo(false);
+     }
+ }
+\ No newline at end of file
+diff --git a/back-end/src/test/java/util/TestFormatBuilder.java b/back-end/src/test/java/util/TestFormatBuilder.java
+index 481901c..969c2b2 100644
+--- a/back-end/src/test/java/util/TestFormatBuilder.java
++++ b/back-end/src/test/java/util/TestFormatBuilder.java
+@@ -3,6 +3,7 @@ package util;
+ import com.endava.ensight.dto.TestFormat;
+ import com.endava.ensight.dto.TestFormatDto;
+ import com.endava.ensight.model.Discipline;
++import com.endava.ensight.model.Test;
+ 
+ import java.util.HashMap;
+ 
+@@ -19,7 +20,7 @@ public final class TestFormatBuilder {
+ 
+     }
+ 
+-    public static TestFormat buildTestFormat(HashMap<String, Integer> map, Integer questions, Integer tests, Discipline discipline) {
++    public static TestFormat buildTestFormat(HashMap<String,Integer> map, Integer questions,Integer tests, Discipline discipline) {
+         TestFormat testFormat = new TestFormat();
+         testFormat.setTests(tests);
+         testFormat.setDifficultyMap(map);
+@@ -28,7 +29,7 @@ public final class TestFormatBuilder {
+         return testFormat;
+     }
+ 
+-    public static TestFormatDto dummyGoodTestFormatDto() {
++    public static TestFormatDto dummyGoodTestFormatDto(){
+         TestFormatDto testFormatDto = new TestFormatDto();
+         testFormatDto.setEasyPercentage(easyDifficulty);
+         testFormatDto.setMediumPercentage(mediumDifficulty);
+@@ -36,10 +37,10 @@ public final class TestFormatBuilder {
+         testFormatDto.setDiscipline(discipline);
+         testFormatDto.setNbOfQuestions(questions);
+         testFormatDto.setNbOfTests(tests);
+-        return testFormatDto;
++        return  testFormatDto;
+     }
+ 
+-    public static TestFormat dummyGoodTestFormat() {
++    public static TestFormat dummyGoodTestFormat(){
+         TestFormat testFormat = new TestFormat();
+         HashMap<String, Integer> map = new HashMap<>();
+         map.put("easy", easyDifficulty);
